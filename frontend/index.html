@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevPulse - Team Health Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold mb-2">DevPulse Dashboard</h1>
+            <p class="text-gray-400">AI-Powered Development Team Health Monitor</p>
+        </div>
+
+        <!-- Metrics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <div class="text-gray-400 text-sm mb-2">Total Analysis</div>
+                <div class="text-3xl font-bold" id="total-analysis">0</div>
+            </div>
+            <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <div class="text-gray-400 text-sm mb-2">Avg Quality</div>
+                <div class="text-3xl font-bold text-green-500" id="avg-quality">0</div>
+            </div>
+            <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <div class="text-gray-400 text-sm mb-2">Active Alerts</div>
+                <div class="text-3xl font-bold text-yellow-500" id="active-alerts">0</div>
+            </div>
+            <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <div class="text-gray-400 text-sm mb-2">Health Score</div>
+                <div class="text-3xl font-bold text-blue-500" id="health-score">0</div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <h2 class="text-xl font-semibold mb-4">Quality Trend (7 Days)</h2>
+                <canvas id="trendChart"></canvas>
+            </div>
+            <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <h2 class="text-xl font-semibold mb-4">Complexity Distribution</h2>
+                <canvas id="complexityChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Recent Analysis Table -->
+        <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+            <h2 class="text-xl font-semibold mb-4">Recent Analysis</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="text-left border-b border-gray-700">
+                            <th class="pb-3">PR Title</th>
+                            <th class="pb-3">Quality Score</th>
+                            <th class="pb-3">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recent-table">
+                        <tr>
+                            <td colspan="3" class="py-4 text-gray-400 text-center">Loading...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Analyze PR Form -->
+        <div class="mt-8 bg-gray-800 rounded-lg p-6 border border-gray-700">
+            <h2 class="text-xl font-semibold mb-4">Analyze New PR</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <input type="text" id="owner" placeholder="Owner (e.g., microsoft)" 
+                       class="bg-gray-700 rounded px-4 py-2 border border-gray-600">
+                <input type="text" id="repo" placeholder="Repo (e.g., vscode)" 
+                       class="bg-gray-700 rounded px-4 py-2 border border-gray-600">
+                <input type="number" id="prNumber" placeholder="PR # (e.g., 200000)" 
+                       class="bg-gray-700 rounded px-4 py-2 border border-gray-600">
+                <button onclick="analyzePR()" 
+                        class="bg-blue-600 hover:bg-blue-700 rounded px-4 py-2 font-semibold">
+                    Analyze
+                </button>
+            </div>
+            <div id="analyze-result" class="mt-4"></div>
+        </div>
+    </div>
+
+    <script>
+        let trendChart, complexityChart;
+
+        async function loadDashboard() {
+            try {
+                const response = await fetch('http://localhost:3000/api/dashboard');
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('total-analysis').textContent = data.metrics.totalAnalysis;
+                    document.getElementById('avg-quality').textContent = data.metrics.averageQuality;
+                    document.getElementById('active-alerts').textContent = data.metrics.activeAlerts;
+                    document.getElementById('health-score').textContent = data.metrics.averageQuality;
+
+                    // Update table
+                    const tableBody = document.getElementById('recent-table');
+                    tableBody.innerHTML = data.recentAnalysis.map(a => `
+                        <tr class="border-b border-gray-700">
+                            <td class="py-3">${a.prTitle}</td>
+                            <td class="py-3">
+                                <span class="px-2 py-1 rounded ${a.qualityScore >= 80 ? 'bg-green-900 text-green-300' : a.qualityScore >= 60 ? 'bg-yellow-900 text-yellow-300' : 'bg-red-900 text-red-300'}">
+                                    ${a.qualityScore}/100
+                                </span>
+                            </td>
+                            <td class="py-3 text-gray-400">${new Date(a.createdAt).toLocaleString()}</td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Failed to load dashboard:', error);
+            }
+
+            // Load analytics
+            await loadAnalytics();
+        }
+
+        async function loadAnalytics() {
+            try {
+                const response = await fetch('http://localhost:3000/api/analytics');
+                const data = await response.json();
+
+                if (data.success) {
+                    // Trend chart
+                    const trendCtx = document.getElementById('trendChart');
+                    if (trendChart) trendChart.destroy();
+                    trendChart = new Chart(trendCtx, {
+                        type: 'line',
+                        data: {
+                            labels: data.weeklyTrend.map(d => d.date),
+                            datasets: [{
+                                label: 'Quality Score',
+                                data: data.weeklyTrend.map(d => Math.round(d.avg_quality)),
+                                borderColor: 'rgb(59, 130, 246)',
+                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                tension: 0.4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: { beginAtZero: true, max: 100 }
+                            }
+                        }
+                    });
+
+                    // Complexity chart
+                    const complexityCtx = document.getElementById('complexityChart');
+                    if (complexityChart) complexityChart.destroy();
+                    complexityChart = new Chart(complexityCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: data.complexityDistribution.map(d => d.complexity),
+                            datasets: [{
+                                data: data.complexityDistribution.map(d => d.count),
+                                backgroundColor: ['#10b981', '#f59e0b', '#ef4444']
+                            }]
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Failed to load analytics:', error);
+            }
+        }
+
+        async function analyzePR() {
+            const owner = document.getElementById('owner').value;
+            const repo = document.getElementById('repo').value;
+            const prNumber = document.getElementById('prNumber').value;
+            const resultDiv = document.getElementById('analyze-result');
+
+            if (!owner || !repo || !prNumber) {
+                resultDiv.innerHTML = '<div class="text-red-500">Please fill all fields</div>';
+                return;
+            }
+
+            resultDiv.innerHTML = '<div class="text-blue-500">Analyzing... This may take 10-15 seconds...</div>';
+
+            try {
+                const response = await fetch('http://localhost:3000/api/analyze-pr', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ owner, repo, prNumber: parseInt(prNumber) })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="bg-green-900 border border-green-700 rounded p-4">
+                            <div class="font-semibold mb-2">✅ Analysis Complete!</div>
+                            <div>Quality Score: ${data.data.analysis.qualityScore}/100</div>
+                            <div>Complexity: ${data.data.analysis.complexity}</div>
+                        </div>
+                    `;
+                    setTimeout(loadDashboard, 1000);
+                } else {
+                    resultDiv.innerHTML = `<div class="text-red-500">Error: ${data.error}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="text-red-500">Failed to analyze PR</div>';
+            }
+        }
+
+        // Load dashboard on page load
+        loadDashboard();
+        
+        // Refresh every 30 seconds
+        setInterval(loadDashboard, 30000);
+    </script>
+</body>
+</html>
