@@ -16,6 +16,7 @@ declare module 'motia' {
     'analyze-code-ai': ApiRouteHandler<Record<string, unknown>, unknown, never>
     'ProcessGreeting': EventHandler<{ timestamp: string; appName: string; greetingPrefix: string; requestId: string }, never>
     'HelloAPI': ApiRouteHandler<Record<string, unknown>, ApiResponse<200, { message: string; status: string; appName: string }>, { topic: 'process-greeting'; data: { timestamp: string; appName: string; greetingPrefix: string; requestId: string } }>
+    'demo-mode': ApiRouteHandler<Record<string, unknown>, unknown, never>
     'dashboard-api': ApiRouteHandler<Record<string, unknown>, unknown, never>
     'analyze-pr-api': ApiRouteHandler<Record<string, unknown>, unknown, never>
     'analytics-api': ApiRouteHandler<Record<string, unknown>, unknown, never>
