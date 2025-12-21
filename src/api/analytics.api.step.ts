@@ -1,13 +1,4 @@
-import { getDatabase } from '../database';
 
-export const config = {
-  name: 'analytics-api',
-  description: 'Get analytics and trends',
-  type: 'api' as const,
-  method: 'GET',
-  path: '/api/analytics',
-  emits: [],
-};
 
 export async function handler() {
   try {
