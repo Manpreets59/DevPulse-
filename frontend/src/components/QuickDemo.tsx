@@ -42,7 +42,7 @@ export default function QuickDemo() {
       const response = await axios.post(`${API_BASE}/analyze-pr`, {
         owner: 'microsoft',
         repo: 'vscode',
-        prNumber: 200000
+        prNumber: 283599
       }, {
         timeout: 60000
       });

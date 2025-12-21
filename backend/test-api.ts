@@ -12,7 +12,7 @@ async function testAPI() {
       body: JSON.stringify({
         owner: 'microsoft',
         repo: 'vscode',
-        prNumber: 199954
+        prNumber: 283599
       })
     });
 

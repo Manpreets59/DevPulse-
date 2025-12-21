@@ -91,7 +91,7 @@ Features:
 ```bash
 curl -X POST http://localhost:3000/api/analyze-pr \
   -H "Content-Type: application/json" \
-  -d '{"owner":"microsoft","repo":"vscode","prNumber":199954}'
+  -d '{"owner":"microsoft","repo":"vscode","prNumber":283599}'
 ```
 
 **Get Dashboard Metrics:**
@@ -126,7 +126,7 @@ Daily report runs automatically at 9 AM:
 1. Enter any public GitHub PR:
    - Owner: `microsoft`
    - Repo: `vscode`
-   - PR #: `199954`
+   - PR #: `283599`
 2. Click "Analyze"
 3. See AI-powered insights in 10-15 seconds
 

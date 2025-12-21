@@ -54,6 +54,13 @@ export async function handler(input: any) {
       }))
     };
   } catch (error: any) {
-    throw new Error(`Failed to fetch PR: ${error.message}`);
+    const errorMessage = error.response?.data?.message || error.message || 'Unknown error';
+    const errorStatus = error.status || error.response?.status || 'Unknown';
+    const docUrl = error.response?.data?.documentation_url || 'https://docs.github.com/rest';
+    
+    console.error(`❌ GitHub API Error [${errorStatus}]: ${errorMessage}`);
+    console.error(`📖 Docs: ${docUrl}`);
+    
+    throw new Error(`Failed to fetch PR: ${errorStatus} - ${errorMessage}`);
   }
 }

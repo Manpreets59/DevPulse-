@@ -11,7 +11,7 @@ async function test() {
     const prData = await fetchPR({
       owner: 'microsoft',
       repo: 'vscode',
-      prNumber: 199954
+      prNumber: 283599
     });
     console.log('✅ Step 1 done');
 

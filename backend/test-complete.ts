@@ -8,7 +8,7 @@ async function test() {
     const result = await analyzePRWorkflow({
       owner: 'microsoft',
       repo: 'vscode',
-      prNumber: 199954
+      prNumber: 283599
     });
 
     console.log('📋 Final Result:');
