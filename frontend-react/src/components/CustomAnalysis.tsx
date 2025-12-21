@@ -8,7 +8,7 @@ export default function CustomAnalysis() {
   const [formData, setFormData] = useState({
     owner: 'microsoft',
     repo: 'vscode',
-    prNumber: '200000'
+    prNumber: '199954'
   });
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);

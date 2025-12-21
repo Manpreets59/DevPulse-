@@ -8,7 +8,7 @@ export const config = {
 };
 
 const demoRepos = [
-  { owner: 'microsoft', repo: 'vscode', prNumber: 200000, title: 'VS Code PR' },
+  { owner: 'microsoft', repo: 'vscode', prNumber: 199954, title: 'VS Code PR' },
   { owner: 'facebook', repo: 'react', prNumber: 28000, title: 'React PR' },
   { owner: 'vercel', repo: 'next.js', prNumber: 60000, title: 'Next.js PR' },
 ];
